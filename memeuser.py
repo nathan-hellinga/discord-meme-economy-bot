@@ -5,6 +5,7 @@ class MemeUser:
         self.ID = id
         self.investments = []
         self.default_invest = 100
+        self.bankrupt_count = 0
 
 
 
@@ -33,6 +34,11 @@ class MemeUser:
         for i in self.investments:
             income += self.sell(i.id)
         return income
+
+    def bankrupt(self, new_bal):
+        self.bankrupt_count += 1
+        self.investments = []
+        self.balance = new_bal
 
 
     def sell(self, invst):

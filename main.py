@@ -6,11 +6,12 @@ from memeuser import MemeUser
 
 parser = argparse.ArgumentParser(description='Discord bot to facilitate investing in posts.')
 # required arguments
-parser.add_argument('--token', help='your discord bot token', required=True)
-parser.add_argument('--channel', help='the channel ID designated for investing', required=True)
+parser.add_argument('-t', '--token', help='your discord bot token', required=True)
+parser.add_argument('-c', '--channel', help='the channel ID designated for investing', required=True)
 # optional arguments
 parser.add_argument('--init_balance', help='the balance that users start at initially', required=False, default=200)
 parser.add_argument('--init_post', help='the balance that posts start at. Higher makes returns lower', required=False, default=1000)
+parser.add_argument('-d', '--dev', help='enables some developer commands', required=False, default=False, action='store_true')
 
 args = parser.parse_args()
 
@@ -45,6 +46,8 @@ async def on_ready():
             userlist.append(nu)
     print("{} users detected and processed".format(len(userlist)))
     print("User starting balance: ${}".format(initbalance))
+    if args.dev is True:
+        print("Starting Bot in DEVELOPER MODE")
     print("------------")
 
 @client.event
@@ -76,6 +79,10 @@ async def on_message(message):
             await sell(message)
         elif message.content.lower().startswith('!my_id'):
             await client.send_message(message.channel, message.author.id)
+        elif message.content.lower().startswith("!bankrupt"):
+            await declare_bankruptcy(message)
+        elif message.content.lower().startswith("!subtract"):
+            await subtract(message)
     else:  # The message is NOT a DM it will count it for investing if it is in the correct channel
         # We add the up and downvote reactions and add the post to a list for counting
         if message.channel.id == channelID:
@@ -101,6 +108,13 @@ async def on_reaction_add(reaction, user):
         mi = await getMarketItem(reaction.message.id)
         mi.downvote()
 
+async def subtract(message):
+    if args.dev is True:
+        user = await getUser(message.author.id)
+        m = message.content.split(' ')
+        user.balance -= int(m[1])
+
+
 
 async def getHelp(message):
     msg = 'Hello {0.author.mention}, here are some things you can ask me: \n' \
@@ -110,10 +124,10 @@ async def getHelp(message):
           '\t`!default_investment %INTEGER%` - Change your default investment value for new investments.\n' \
           '\t`!sell %INVESTMENT ID%` - Sell your investment for its current value.\n' \
           '\t`!sell all` - Sell all outstanding investments for their current value.\n' \
+          '\t`!bankrupt` - Usable only when close to $0 to help you get back on your feet. Don\'t just say it, declare it. \n' \
           '**Instructions:**\n' \
           'To invest in memes simply react to them with 👍\n' \
-          'When investing with 👍, you will always invest what your `default_investment` is set to. ' \
-          'Investments will automatically mature in 1h and the resulting $$ will be added to your balance `feature comeing`'.format(message)
+          'When investing with 👍, you will always invest what your `default_investment` is set to.'.format(message)
     await client.send_message(message.channel, msg)
 
 
@@ -165,6 +179,7 @@ async def showInvestments(message):
         await client.send_message(message.channel, msg)
     else:
         await client.send_message(message.channel, "You currently have `0` investments.")
+    await client.send_message(message.channel, "You have declared bankruptcy {} times.".format(user.bankrupt_count))
 
 
 async def sell(message):
@@ -184,6 +199,19 @@ async def sell(message):
         await client.send_message(message.channel, "You do not have any investments with that ID.")
     else:
         await client.send_message(message.channel, "Income from sale: `${}`".format(income))
+
+async def declare_bankruptcy(message):
+    user = await getUser(message.author.id)
+    # if the user has no outstanding investments and has less then a quarter of the starting value
+    if user.get_outstanding() == 0 and user.balance < initbalance / 4:
+        user.bankrupt(initbalance / 4)
+        await client.send_message(message.channel, "You have sucessfully declared bankruptcy. You have been granted "
+                                                   "an initial balance of ${}.".format(initbalance / 4))
+    elif user.get_outstanding() != 0:
+        await client.send_message(message.channel, "You cannot declare bankruptcy unless you have 0 investments.")
+    else:
+        await client.send_message(message.channel, "You have too much money to declare bankruptcy.")
+
 
 
 async def memeUserExists(checkID):
