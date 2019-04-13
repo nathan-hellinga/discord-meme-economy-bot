@@ -52,9 +52,10 @@ async def on_ready():
 
 @client.event
 async def on_member_join(member):
-    nu = MemeUser(member.id, initbalance)
-    userlist.append(nu)
-    print("New User added and given ${} in starting money".format(initbalance))
+    if await memeUserExists(member.id) is False:
+        nu = MemeUser(member.id, initbalance)
+        userlist.append(nu)
+        print("New User added and given ${} in starting money".format(initbalance))
 
 
 @client.event
@@ -83,6 +84,9 @@ async def on_message(message):
             await declare_bankruptcy(message)
         elif message.content.lower().startswith("!subtract"):
             await subtract(message)
+        elif message.content.lower().startswith("!add"):
+            await add(message)
+
     else:  # The message is NOT a DM it will count it for investing if it is in the correct channel
         # We add the up and downvote reactions and add the post to a list for counting
         if message.channel.id == channelID:
@@ -108,12 +112,29 @@ async def on_reaction_add(reaction, user):
         mi = await getMarketItem(reaction.message.id)
         mi.downvote()
 
+@client.event
+async def on_reaction_remove(reaction, user):
+    if reaction.emoji == '👎':
+        mi = await getMarketItem(reaction.message.id)
+        mi.remove_downvote()
+
 async def subtract(message):
+    """
+    Developer function to subtract funds
+    """
     if args.dev is True:
         user = await getUser(message.author.id)
         m = message.content.split(' ')
         user.balance -= int(m[1])
 
+async def add(message):
+    """
+    Developer function to add funds
+    """
+    if args.dev is True:
+        user = await getUser(message.author.id)
+        m = message.content.split(' ')
+        user.balance += int(m[1])
 
 
 async def getHelp(message):

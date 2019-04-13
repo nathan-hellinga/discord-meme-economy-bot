@@ -30,5 +30,12 @@ simply replace "YOURTOKEN" and "YOURCHANNELID" with the token value and channel 
 You should see some output to the console and you should be able to see in your server that your bot is online.
 Terminating the script execution will turn the bot offline.
 
+## Developer Options
+The Bot can be run in _Developer Mode_ by adding the tag `--dev` when launching it. This enables a few more commands that
+can be accessed via DMs.
+
+- `!add INTEGER` Adds some integer value to your balance.
+- `!subtract INTEGER` Subtracts some integer value from your balance.
+
 ## Notes
 Only posts that are submitted **after** the bot is online will be eligible for investing in the economy.

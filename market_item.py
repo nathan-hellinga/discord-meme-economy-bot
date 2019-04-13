@@ -7,3 +7,8 @@ class MarketItem:
 
     def downvote(self, amount=100):
         self.value -= amount
+        if self.value < 0:
+            self.value = 0
+
+    def remove_downvote(self, amount=100):
+        self.value += amount
