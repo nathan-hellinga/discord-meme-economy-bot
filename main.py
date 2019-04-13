@@ -26,6 +26,7 @@ initbalance = int(args.init_balance)
 init_post_balance = int(args.init_post)
 activeMarkets = []
 memechannel = None
+skim_percent = 0.02
 
 @client.event
 async def on_ready():
@@ -189,6 +190,10 @@ async def createInvestment(message, uid):
         ret = user.addInvestment(message.id, mi.value, mi)
         if ret is None:
             print("Investment not added, user insufficient funds")
+        elif message.author.id != uid:
+            meme_poster = await getUser(message.author.id)
+            meme_poster.balance += int(user.default_invest * skim_percent)
+            print("raking in the ca$h")
 
 
 
