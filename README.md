@@ -7,7 +7,7 @@ This bot will allow users to create a "meme economy" out of one of their server 
 For more information about what the meme economy is and how it works please visit www.reddit.com/r/memeeconomy.
 
 ## Installation
-- Ensure `Python 3.5` is installed on your system
+- Ensure `Python 3.5.3` or higher is installed on your system
 - Install `Discord.py` (the python discord API) with the command `pip install discord.py` (
 - Create an application at https://discordapp.com/developers/applications/ and copy the **TOKEN** from the BOT settings
 - Get the Channel ID for the channel you wish to make your meme economy. To do this open the Discord application and go to `User Settings -> Appearance -> Enable Developer`. Right click on the channel and copy the ID.
