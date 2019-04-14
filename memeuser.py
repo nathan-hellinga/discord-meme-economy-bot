@@ -7,27 +7,33 @@ class MemeUser:
         self.default_invest = 100
         self.bankrupt_count = 0
 
-
-
-    def addInvestment(self, id, cur_value, marketItem, ammount=None):
+    def add_investment(self, id, cur_value, marketItem, amount=None):
+        """
+        Create an investment object or add value to an existing one
+        :param id: The ID of the post to invest in
+        :param cur_value: The current value of the post
+        :param marketItem: The post object
+        :param amount: The amount to invest in the post
+        :return: The success of the action (boolean)
+        """
         from investment import Investment
 
-        if ammount is None:
-            ammount = self.default_invest
-        # Handle insufficient funds
+        if amount is None:
+            amount = self.default_invest
+
+        # Check if the user has enough to invest
         if self.balance <= 0:
             return None
-        elif self.balance < ammount:
-            ammount = self.balance
+        elif self.balance < amount:
+            amount = self.balance
 
-        self.balance -= ammount
-        investmnt = Investment(ammount, int(id), cur_value + ammount, marketItem)
+        self.balance -= amount
+        investmnt = Investment(amount, int(id), cur_value + amount, marketItem)
         self.investments.append(investmnt)
 
-        marketItem.value += ammount
+        marketItem.value += amount
         # return True if an investment was successfully added
         return True
-
 
     def sell_all(self):
         income = 0
@@ -39,7 +45,6 @@ class MemeUser:
         self.bankrupt_count += 1
         self.investments = []
         self.balance = new_bal
-
 
     def sell(self, invst):
         # find the investment in the list by its ID
@@ -57,8 +62,6 @@ class MemeUser:
         invst.cash_out()
         return income
 
-
-
     def set_defaults(self, invest):
         self.default_invest = invest
 
@@ -68,8 +71,7 @@ class MemeUser:
                 return i
         return None
 
-
-    def getInvestmentDisplay(self):
+    def get_investment_display(self):
         # compose lines
         result = []
         for i in self.investments:

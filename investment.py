@@ -1,7 +1,13 @@
 class Investment:
 
-
     def __init__(self, value, marketID, current_value, marketItem):
+        """
+        Constructor
+        :param value: the initial value invested
+        :param marketID: the id
+        :param current_value: the value the post is at at the time of investing
+        :param marketItem: The market object
+        """
         self.value = value
         self.id = marketID
         self.original_value = current_value
