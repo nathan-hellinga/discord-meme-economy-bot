@@ -3,6 +3,7 @@ import argparse
 
 from market_item import MarketItem
 from memeuser import MemeUser
+from command_parse import CommandParse
 
 parser = argparse.ArgumentParser(description='Discord bot to facilitate investing in posts.')
 # required arguments
@@ -19,6 +20,7 @@ TOKEN = args.token
 channelID = int(args.channel)
 
 client = discord.Client()
+cparse = CommandParse(args.dev)
 
 # global values
 userlist = []
@@ -74,27 +76,9 @@ async def on_message(message):
     # If the message is a DM it will check these conditions
     if message.guild is None:
         print(message.content)
-
-        if message.content.lower().startswith('!help'):             # show the user the available commands
-            await get_help(message)
-        elif message.content.lower().startswith('!balance'):        # show the user only their current balance
-            await check_balance(message)
-        elif message.content.lower().startswith('!portfolio'):      # show the user what investments they have
-            await show_investments(message)
-        elif message.content.lower().startswith('!val'):
-            await change_default_investment(message)
-        elif message.content.lower().startswith('!sell'):
-            await sell(message)
-        elif message.content.lower().startswith('!my_id'):
-            await message.channel.send(message.author.id)
-        elif message.content.lower().startswith("!bankrupt"):
-            await declare_bankruptcy(message)
-        elif message.content.lower().startswith("!subtract"):
-            await subtract(message)
-        elif message.content.lower().startswith("!add"):
-            await add(message)
-        elif message.content.lower().startswith("!shutdown"):
-            await shutdown()
+        method = cparse.parse(message.content)
+        if method is not None:
+            await method(message)
 
     else:  # The message is NOT a DM it will count it for investing if it is in the correct channel
         # We add the up and downvote reactions and add the post to a list for counting
@@ -151,26 +135,12 @@ async def add(message):
         await message.channel.send("Your new balance is `${}`".format(user.balance))
 
 
-async def shutdown():
-    if args.dev is True:
-        # TODO save log information or something
-        print("SHUTDOWN COMMAND RECEIVED, SHUTTING DOWN")
-        exit(0)
-
-
 # USER FUNCTIONS
 async def get_help(message):
-    msg = 'Hello {0.author.mention}, here are some things you can ask me: \n' \
-          '\t`!help` - Displays this help dialog.\n' \
-          '\t`!balance` - Get information about your current balance.\n' \
-          '\t`!portfolio` - Get information about your current investment portfolio.\n' \
-          '\t`!val %INTEGER%` - Change your default investment value for new investments.\n' \
-          '\t`!sell %INVESTMENT ID%` - Sell your investment for its current value.\n' \
-          '\t`!sell all` - Sell all outstanding investments for their current value.\n' \
-          '\t`!bankrupt` - Usable only when close to $0 to help you get back on your feet. Don\'t just say it, declare it. \n' \
-          '**Instructions:**\n' \
-          'To invest in memes simply react to them with 👍\n' \
-          'When investing with 👍, you will always invest what your `default_investment` is set to.'.format(message)
+    msg = "Hello {0.author.mention}, here are some things you can ask me: \n".format(message)
+    msg += cparse.list()
+    msg += "To invest in memes simply react to them with 👍\n"\
+           "When investing with 👍, you will always invest what your `default_investment` is set to."
     await message.channel.send(msg)
 
 
@@ -292,5 +262,14 @@ async def get_market_item(mid):
             return m
     return None
 
+
+cparse.add_command('!balance', check_balance, "Check your current balance")
+cparse.add_command('!help', get_help, "Display the available commands")
+cparse.add_command('!portfolio', show_investments, "display all of your current investments")
+cparse.add_command('!val', change_default_investment, "Change your default investment amount")
+cparse.add_command('!sell', sell, "Cash out some investments. Use keyword 'all' to sell all at once or use a post ID")
+cparse.add_command('!bankrupt', declare_bankruptcy, "Declare bankruptcy if you are close to $0")
+cparse.add_command('!subtract', subtract, "DEV - subtract from your current balance", dev=True)
+cparse.add_command('!add', add, "DEV - add to your current balance", dev=True)
 
 client.run(TOKEN)
