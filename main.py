@@ -120,6 +120,10 @@ async def subtract(message):
     if args.dev is True:
         user = await get_user(message.author.id)
         m = message.content.split(' ')
+        # check second parameter
+        if len(m) == 1:
+            await message.channel.send("You must provide an integer value after the command.")
+            return None
         user.balance -= int(m[1])
         await message.channel.send("Your new balance is `${}`".format(user.balance))
 
@@ -131,6 +135,10 @@ async def add(message):
     if args.dev is True:
         user = await get_user(message.author.id)
         m = message.content.split(' ')
+        # check second parameter
+        if len(m) == 1:
+            await message.channel.send("You must provide an integer value after the command.")
+            return None
         user.balance += int(m[1])
         await message.channel.send("Your new balance is `${}`".format(user.balance))
 
