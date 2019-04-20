@@ -1,8 +1,9 @@
 class MemeUser:
 
-    def __init__(self, id, balance):
+    def __init__(self, id, balance, name="Null"):
         self.balance = balance
         self.ID = id
+        self.name = name
         self.investments = []
         self.default_invest = 100
         self.bankrupt_count = 0

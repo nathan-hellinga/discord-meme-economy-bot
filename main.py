@@ -51,7 +51,7 @@ async def on_ready():
     potentialUsers = memechannel.guild.members
     for m in potentialUsers:
         if m != client.user and await meme_user_exists(m.id) is False:
-            nu = MemeUser(m.id, initbalance)
+            nu = MemeUser(m.id, initbalance, m.name)
             userlist.append(nu)
     print("{} users detected and processed".format(len(userlist)))
     print("User starting balance: ${}".format(initbalance))
@@ -62,7 +62,7 @@ async def on_ready():
 @client.event
 async def on_member_join(member):
     if await meme_user_exists(member.id) is False:
-        nu = MemeUser(member.id, initbalance)
+        nu = MemeUser(member.id, initbalance, member.name)
         userlist.append(nu)
         print("New User added and given ${} in starting money".format(initbalance))
 
@@ -248,6 +248,16 @@ async def declare_bankruptcy(message):
         await message.channel.send("You have too much money to declare bankruptcy.")
 
 
+async def get_leaderboards(message):
+    # sort the user list by their net worth
+    sorted_list = sorted(userlist, key=lambda x: x.balance + x.get_outstanding(), reverse=True)
+    msg = "__TOP {} USERS__\n".format(min(len(sorted_list), 5))
+    for m in range(min(len(sorted_list), 5)):
+        bal = sorted_list[m].balance + sorted_list[m].get_outstanding()
+        msg += "{}. {} : ${}\n".format(m + 1, sorted_list[m].name, bal)
+
+    await message.channel.send(msg)
+
 # UTILITY FUNCTIONS
 async def meme_user_exists(checkID):
     for u in userlist:
@@ -277,6 +287,7 @@ cparse.add_command('!portfolio', show_investments, "display all of your current 
 cparse.add_command('!val', change_default_investment, "Change your default investment amount")
 cparse.add_command('!sell', sell, "Cash out some investments. Use keyword 'all' to sell all at once or use a post ID")
 cparse.add_command('!bankrupt', declare_bankruptcy, "Declare bankruptcy if you are close to $0")
+cparse.add_command('!leaderboard', get_leaderboards, "Show the current leaderboard")
 cparse.add_command('!subtract', subtract, "DEV - subtract from your current balance", dev=True)
 cparse.add_command('!add', add, "DEV - add to your current balance", dev=True)
 
